@@ -7,6 +7,8 @@
 #include <linux/if.h>
 #include <netpacket/packet.h>
 #include <netinet/if_ether.h>
+#include <netinet/ip.h>
+#include "analyze.h"
 
 int init_raw_socket(char *device,int promiscFlag,int ipOnly);
 char *my_ether_ntoa_r(u_char *hwaddr,char *buf,socklen_t size);
@@ -14,7 +16,7 @@ int print_ether_header(struct ether_header *eh,FILE *fp);
 
 int main(int argc,char *argv[],char *envp[]){
 	int soc,size;
-	u_char buf[2048];
+	u_char buf[65535];
 	if(argc<=1){
 		fprintf(stderr,"Itest device-name\n");
 		return 1;
@@ -28,12 +30,7 @@ int main(int argc,char *argv[],char *envp[]){
 			perror("read error");
 		}
 		else{
-			if(size>=sizeof(struct ether_header)){
-				print_ether_header((struct ether_header *)buf,stdout);
-			}
-			else{
-				fprintf(stderr,"read size(%d) < %d \n",size,(int)sizeof(struct ether_header));
-			}
+			analyze_packet(buf,size);
 		}
 	}
 	close(soc);
@@ -98,34 +95,4 @@ int init_raw_socket(char *device,int promiscFlag,int ipOnly){
 		}
 	}
 	return(soc);
-}
-
-// change MAC_address to string
-char *my_ether_ntoa_r(u_char *hwaddr,char *buf,socklen_t size){
-	snprintf(buf,size,"%02x:%02x:%02x:%02x%02x:%02x",
-			hwaddr[0],hwaddr[1],hwaddr[2],hwaddr[3],hwaddr[4],hwaddr[5]);
-	return buf;
-}
-
-int print_ether_header(struct ether_header *eh,FILE *fp){
-	char buf[80];
-	fprintf(fp,"ether_header-------------------------------------------------\n");
-	fprintf(fp,"ethier_dhost=%s\n",my_ether_ntoa_r(eh->ether_dhost,buf,sizeof(buf)));
-	fprintf(fp,"ethier_shost=%s\n",my_ether_ntoa_r(eh->ether_shost,buf,sizeof(buf)));
-	fprintf(fp,"ehter_type=%02x",ntohs(eh->ether_type));
-	switch(ntohs(eh->ether_type)){
-		case ETH_P_IP:
-			fprintf(fp,"(IP)\n");
-			break;
-		case ETH_P_IPV6:
-			fprintf(fp,"(IPv6)\n");
-			break;
-		case ETH_P_ARP:
-			fprintf(fp,"(ARP),\n");
-			break;
-		default:
-			fprintf(fp,"(unknown)\n");
-			break;
-	}
-	return 0;
 }
