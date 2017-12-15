@@ -100,7 +100,7 @@ int analyze_ip(u_char *data,int size){
 	ptr+=sizeof(struct iphdr);
 	lest-=sizeof(struct iphdr);
 	
-	//skip option contents
+	//skip option contents .agnore option
 	option_len=iphdr->ihl*4 - sizeof(struct iphdr);
 	if(option_len>0){
 		if(option_len>=1500){
@@ -111,7 +111,7 @@ int analyze_ip(u_char *data,int size){
 		ptr+=option_len;
 		lest-=option_len;
 	}
-	//I remove because cheksum will be done  in analyze udp,tcp ,or icmp
+	//I removed this code because cheksum will be done  in function of analyze udp,tcp ,or icmp
 	/*if(check_IPDATA_checksum(iphdr,option,option_len)==0){
 		fprintf(stderr,"bad ip checksum\n");
 		return -1;
