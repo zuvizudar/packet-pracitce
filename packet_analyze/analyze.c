@@ -111,7 +111,7 @@ int analyze_ip(u_char *data,int size){
 		ptr+=option_len;
 		lest-=option_len;
 	}
-	
+	//I remove because cheksum will be done  in analyze udp,tcp ,or icmp
 	/*if(check_IPDATA_checksum(iphdr,option,option_len)==0){
 		fprintf(stderr,"bad ip checksum\n");
 		return -1;
